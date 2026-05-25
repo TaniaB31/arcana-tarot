@@ -637,7 +637,7 @@ function Chat({usuario,t,onBack}){
 
 function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
   const estadosTarotistas=useEstadoTarotistas();
-  const isOnline=(t)=>estadosTarotistas[t.id]??isOnline(t);
+  const isOnline=(t)=>estadosTarotistas[t.id]??t.disponible;
   const px=m?"16px":"40px";
   return(
     <div style={{position:"relative",zIndex:1,minHeight:"100vh",background:"linear-gradient(180deg,#05030f 0%,#0a0618 50%,#050310 100%)",fontFamily:"'Cormorant Garamond',serif"}}>
@@ -706,7 +706,7 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
                     <h3 style={{fontFamily:"'Cinzel',serif",fontSize:"20px",color:"#fff",marginBottom:"2px"}}>{t.nombre}</h3>
                     <p style={{fontSize:"12px",color:`${t.color}cc`,marginBottom:"10px"}}>{t.esp}</p>
                     <p style={{color:"rgba(255,255,255,0.45)",fontSize:"13px",lineHeight:1.6,marginBottom:"12px",fontStyle:"italic"}}>"{t.bio.slice(0,100)}…"</p>
-                    <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??isOnline(t))&&abrirModal(t);}} style={{width:"100%",padding:"11px",background:isOnline(t)?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${isOnline(t)?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"10px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
+                    <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t);}} style={{width:"100%",padding:"11px",background:isOnline(t)?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${isOnline(t)?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"10px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
                       {isOnline(t)?"INICIAR CONSULTA":"NO DISPONIBLE"}
                     </button>
                   </div>
@@ -731,7 +731,7 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
                     </div>
                     <span style={{fontSize:"12px",color:"rgba(255,255,255,0.3)"}}>{t.reviews.toLocaleString()} consultas</span>
                   </div>
-                  <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??isOnline(t))&&abrirModal(t);}} className={isOnline(t)?"btn-glow":""} style={{width:"100%",padding:"13px",background:isOnline(t)?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${isOnline(t)?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"12px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"12px",letterSpacing:"2px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
+                  <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t);}} className={isOnline(t)?"btn-glow":""} style={{width:"100%",padding:"13px",background:isOnline(t)?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${isOnline(t)?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"12px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"12px",letterSpacing:"2px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
                     {isOnline(t)?"INICIAR CONSULTA":"NO DISPONIBLE"}
                   </button>
                 </div>
@@ -759,7 +759,7 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
 
 function PaginaTarotistas({ir,abrirModal,m}){
   const estadosTarotistas=useEstadoTarotistas();
-  const isOnline=(t)=>estadosTarotistas[t.id]??isOnline(t);
+  const isOnline=(t)=>estadosTarotistas[t.id]??t.disponible;
   const px=m?"16px":"40px";
   const[perfil,setPerfil]=useState(null);
   if(perfil){const t=perfil;return(
@@ -797,7 +797,7 @@ function PaginaTarotistas({ir,abrirModal,m}){
                 </div>
               ))}
             </div>
-            <button onClick={()=>(estadosTarotistas[t.id]??isOnline(t))&&abrirModal(t)} className={isOnline(t)?"btn-glow":""} style={{width:"100%",padding:"15px",background:isOnline(t)?`linear-gradient(135deg,${t.color}cc,${t.color}77)`:"rgba(255,255,255,0.04)",border:isOnline(t)?"none":"1px solid rgba(255,255,255,0.08)",borderRadius:"14px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"13px",letterSpacing:"2px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
+            <button onClick={()=>(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t)} className={isOnline(t)?"btn-glow":""} style={{width:"100%",padding:"15px",background:isOnline(t)?`linear-gradient(135deg,${t.color}cc,${t.color}77)`:"rgba(255,255,255,0.04)",border:isOnline(t)?"none":"1px solid rgba(255,255,255,0.08)",borderRadius:"14px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"13px",letterSpacing:"2px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
               {isOnline(t)?"INICIAR CONSULTA":"NO DISPONIBLE AHORA"}
             </button>
           </div>
@@ -873,7 +873,7 @@ function PaginaTarotistas({ir,abrirModal,m}){
                 </div>
                 <div style={{display:"flex",gap:"9px"}}>
                   <button onClick={e=>{e.stopPropagation();setPerfil(t);}} style={{flex:1,padding:"11px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(192,132,252,0.2)",borderRadius:"11px",color:"rgba(255,255,255,0.7)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:"pointer"}}>VER PERFIL</button>
-                  <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??isOnline(t))&&abrirModal(t);}} className={isOnline(t)?"btn-glow":""} style={{flex:1,padding:"11px",background:isOnline(t)?`linear-gradient(135deg,${t.color}bb,${t.color}66)`:"rgba(255,255,255,0.03)",border:isOnline(t)?"none":"1px solid rgba(255,255,255,0.07)",borderRadius:"11px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.25)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
+                  <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t);}} className={isOnline(t)?"btn-glow":""} style={{flex:1,padding:"11px",background:isOnline(t)?`linear-gradient(135deg,${t.color}bb,${t.color}66)`:"rgba(255,255,255,0.03)",border:isOnline(t)?"none":"1px solid rgba(255,255,255,0.07)",borderRadius:"11px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.25)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
                     {isOnline(t)?"CONSULTAR":"OCUPADA"}
                   </button>
                 </div>
