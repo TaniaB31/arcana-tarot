@@ -637,6 +637,7 @@ function Chat({usuario,t,onBack}){
 
 function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
   const estadosTarotistas=useEstadoTarotistas();
+  const isOnline=(t)=>estadosTarotistas[t.id]??isOnline(t);
   const px=m?"16px":"40px";
   return(
     <div style={{position:"relative",zIndex:1,minHeight:"100vh",background:"linear-gradient(180deg,#05030f 0%,#0a0618 50%,#050310 100%)",fontFamily:"'Cormorant Garamond',serif"}}>
@@ -695,9 +696,9 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
                 <div style={{padding:"20px 16px",display:"flex",gap:"14px",background:`radial-gradient(ellipse at 0% 50%,${t.color}08,transparent 60%)`}}>
                   <div style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",gap:"8px"}}>
                     <div style={{width:"68px",height:"68px",borderRadius:"50%",background:`radial-gradient(circle at 35% 35%,${t.color}33,${t.color}08)`,border:`2px solid ${t.color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"30px"}}>{t.icono}</div>
-                    <div style={{display:"flex",alignItems:"center",gap:"4px",padding:"3px 8px",background:t.disponible?"rgba(52,211,153,0.1)":"rgba(255,255,255,0.05)",border:`1px solid ${t.disponible?"rgba(52,211,153,0.3)":"rgba(255,255,255,0.1)"}`,borderRadius:"100px"}}>
-                      <div style={{width:"5px",height:"5px",borderRadius:"50%",background:t.disponible?"#34d399":"rgba(255,255,255,0.3)"}}/>
-                      <span style={{fontSize:"10px",color:t.disponible?"#34d399":"rgba(255,255,255,0.35)",fontFamily:"'Cinzel',serif",whiteSpace:"nowrap"}}>{t.disponible?"Online":"Ocupada"}</span>
+                    <div style={{display:"flex",alignItems:"center",gap:"4px",padding:"3px 8px",background:isOnline(t)?"rgba(52,211,153,0.1)":"rgba(255,255,255,0.05)",border:`1px solid ${isOnline(t)?"rgba(52,211,153,0.3)":"rgba(255,255,255,0.1)"}`,borderRadius:"100px"}}>
+                      <div style={{width:"5px",height:"5px",borderRadius:"50%",background:isOnline(t)?"#34d399":"rgba(255,255,255,0.3)"}}/>
+                      <span style={{fontSize:"10px",color:isOnline(t)?"#34d399":"rgba(255,255,255,0.35)",fontFamily:"'Cinzel',serif",whiteSpace:"nowrap"}}>{isOnline(t)?"Online":"Ocupada"}</span>
                     </div>
                   </div>
                   <div style={{flex:1,minWidth:0}}>
@@ -705,16 +706,16 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
                     <h3 style={{fontFamily:"'Cinzel',serif",fontSize:"20px",color:"#fff",marginBottom:"2px"}}>{t.nombre}</h3>
                     <p style={{fontSize:"12px",color:`${t.color}cc`,marginBottom:"10px"}}>{t.esp}</p>
                     <p style={{color:"rgba(255,255,255,0.45)",fontSize:"13px",lineHeight:1.6,marginBottom:"12px",fontStyle:"italic"}}>"{t.bio.slice(0,100)}…"</p>
-                    <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t);}} style={{width:"100%",padding:"11px",background:t.disponible?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${t.disponible?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"10px",color:t.disponible?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:t.disponible?"pointer":"not-allowed"}}>
-                      {t.disponible?"INICIAR CONSULTA":"NO DISPONIBLE"}
+                    <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??isOnline(t))&&abrirModal(t);}} style={{width:"100%",padding:"11px",background:isOnline(t)?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${isOnline(t)?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"10px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
+                      {isOnline(t)?"INICIAR CONSULTA":"NO DISPONIBLE"}
                     </button>
                   </div>
                 </div>
               :<>
                 <div style={{padding:"40px 26px 26px",textAlign:"center",background:`radial-gradient(ellipse at 50% 0%,${t.color}10,transparent 60%)`,position:"relative"}}>
-                  <div style={{position:"absolute",top:"14px",right:"14px",display:"flex",alignItems:"center",gap:"5px",padding:"4px 10px",background:t.disponible?"rgba(52,211,153,0.1)":"rgba(255,255,255,0.05)",border:`1px solid ${t.disponible?"rgba(52,211,153,0.3)":"rgba(255,255,255,0.1)"}`,borderRadius:"100px"}}>
-                    <div style={{width:"6px",height:"6px",borderRadius:"50%",background:t.disponible?"#34d399":"rgba(255,255,255,0.3)",animation:t.disponible?"pulse 2s infinite":"none"}}/>
-                    <span style={{fontSize:"11px",color:t.disponible?"#34d399":"rgba(255,255,255,0.35)",fontFamily:"'Cinzel',serif"}}>{t.disponible?"En línea":"Ocupada"}</span>
+                  <div style={{position:"absolute",top:"14px",right:"14px",display:"flex",alignItems:"center",gap:"5px",padding:"4px 10px",background:isOnline(t)?"rgba(52,211,153,0.1)":"rgba(255,255,255,0.05)",border:`1px solid ${isOnline(t)?"rgba(52,211,153,0.3)":"rgba(255,255,255,0.1)"}`,borderRadius:"100px"}}>
+                    <div style={{width:"6px",height:"6px",borderRadius:"50%",background:isOnline(t)?"#34d399":"rgba(255,255,255,0.3)",animation:isOnline(t)?"pulse 2s infinite":"none"}}/>
+                    <span style={{fontSize:"11px",color:isOnline(t)?"#34d399":"rgba(255,255,255,0.35)",fontFamily:"'Cinzel',serif"}}>{isOnline(t)?"En línea":"Ocupada"}</span>
                   </div>
                   <div style={{width:"96px",height:"96px",borderRadius:"50%",background:`radial-gradient(circle at 35% 35%,${t.color}33,${t.color}08)`,border:`2px solid ${t.color}44`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",fontSize:"42px",animation:"float 6s ease-in-out infinite"}}>{t.icono}</div>
                   <div style={{fontSize:"10px",letterSpacing:"3px",color:`${t.color}99`,textTransform:"uppercase",marginBottom:"6px"}}>{t.simbolo}</div>
@@ -730,8 +731,8 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
                     </div>
                     <span style={{fontSize:"12px",color:"rgba(255,255,255,0.3)"}}>{t.reviews.toLocaleString()} consultas</span>
                   </div>
-                  <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t);}} className={t.disponible?"btn-glow":""} style={{width:"100%",padding:"13px",background:t.disponible?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${t.disponible?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"12px",color:t.disponible?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"12px",letterSpacing:"2px",cursor:t.disponible?"pointer":"not-allowed"}}>
-                    {t.disponible?"INICIAR CONSULTA":"NO DISPONIBLE"}
+                  <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??isOnline(t))&&abrirModal(t);}} className={isOnline(t)?"btn-glow":""} style={{width:"100%",padding:"13px",background:isOnline(t)?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${isOnline(t)?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"12px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"12px",letterSpacing:"2px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
+                    {isOnline(t)?"INICIAR CONSULTA":"NO DISPONIBLE"}
                   </button>
                 </div>
               </>}
@@ -744,7 +745,7 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
         <h2 style={{fontFamily:"'Cinzel',serif",fontSize:m?"24px":"36px",color:"#fff",marginBottom:"12px"}}>Empieza gratis hoy</h2>
         <p style={{fontSize:m?"15px":"18px",color:"rgba(255,255,255,0.5)",marginBottom:"32px",fontStyle:"italic"}}>Recibe 20 créditos de bienvenida · válidos durante 90 días (3 meses) y descubre lo que el tarot tiene para ti</p>
         <div style={{display:"flex",gap:"12px",justifyContent:"center",flexDirection:m?"column":"row"}}>
-          {TAROTISTAS.filter(t=>t.disponible).map(t=>(
+          {TAROTISTAS.filter(t=>isOnline(t)).map(t=>(
             <button key={t.id} onClick={()=>abrirModal(t)} className="btn-glow" style={{padding:"13px 22px",background:"linear-gradient(135deg,#9333ea,#c084fc)",border:"none",borderRadius:"14px",color:"#fff",fontFamily:"'Cinzel',serif",fontSize:"12px",letterSpacing:"2px",cursor:"pointer"}}>
               {t.icono} Consultar con {t.nombre}
             </button>
@@ -758,6 +759,7 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
 
 function PaginaTarotistas({ir,abrirModal,m}){
   const estadosTarotistas=useEstadoTarotistas();
+  const isOnline=(t)=>estadosTarotistas[t.id]??isOnline(t);
   const px=m?"16px":"40px";
   const[perfil,setPerfil]=useState(null);
   if(perfil){const t=perfil;return(
@@ -771,8 +773,8 @@ function PaginaTarotistas({ir,abrirModal,m}){
           <div style={{textAlign:m?"center":"left"}}>
             <div style={{width:m?"110px":"150px",height:m?"110px":"150px",borderRadius:"50%",background:`radial-gradient(circle at 35% 35%,${t.color}44,${t.color}10)`,border:`3px solid ${t.color}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:m?"48px":"64px",margin:m?"0 auto 22px":"0 0 24px",animation:"float 6s ease-in-out infinite"}}>{t.icono}</div>
             <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px",justifyContent:m?"center":"flex-start"}}>
-              <div style={{width:"8px",height:"8px",borderRadius:"50%",background:t.disponible?"#34d399":"rgba(255,255,255,0.3)",animation:t.disponible?"pulse 2s infinite":"none"}}/>
-              <span style={{fontSize:"13px",color:t.disponible?"#34d399":"rgba(255,255,255,0.4)",fontFamily:"'Cinzel',serif"}}>{t.disponible?"Disponible ahora":"No disponible"}</span>
+              <div style={{width:"8px",height:"8px",borderRadius:"50%",background:isOnline(t)?"#34d399":"rgba(255,255,255,0.3)",animation:isOnline(t)?"pulse 2s infinite":"none"}}/>
+              <span style={{fontSize:"13px",color:isOnline(t)?"#34d399":"rgba(255,255,255,0.4)",fontFamily:"'Cinzel',serif"}}>{isOnline(t)?"Disponible ahora":"No disponible"}</span>
             </div>
             <div style={{fontSize:"11px",letterSpacing:"3px",color:`${t.color}99`,textTransform:"uppercase",marginBottom:"6px"}}>{t.simbolo}</div>
             <h1 style={{fontFamily:"'Cinzel',serif",fontSize:m?"30px":"40px",color:"#fff",marginBottom:"4px"}}>{t.nombre}</h1>
@@ -795,8 +797,8 @@ function PaginaTarotistas({ir,abrirModal,m}){
                 </div>
               ))}
             </div>
-            <button onClick={()=>(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t)} className={t.disponible?"btn-glow":""} style={{width:"100%",padding:"15px",background:t.disponible?`linear-gradient(135deg,${t.color}cc,${t.color}77)`:"rgba(255,255,255,0.04)",border:t.disponible?"none":"1px solid rgba(255,255,255,0.08)",borderRadius:"14px",color:t.disponible?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"13px",letterSpacing:"2px",cursor:t.disponible?"pointer":"not-allowed"}}>
-              {t.disponible?"INICIAR CONSULTA":"NO DISPONIBLE AHORA"}
+            <button onClick={()=>(estadosTarotistas[t.id]??isOnline(t))&&abrirModal(t)} className={isOnline(t)?"btn-glow":""} style={{width:"100%",padding:"15px",background:isOnline(t)?`linear-gradient(135deg,${t.color}cc,${t.color}77)`:"rgba(255,255,255,0.04)",border:isOnline(t)?"none":"1px solid rgba(255,255,255,0.08)",borderRadius:"14px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"13px",letterSpacing:"2px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
+              {isOnline(t)?"INICIAR CONSULTA":"NO DISPONIBLE AHORA"}
             </button>
           </div>
           {/* RIGHT */}
@@ -847,9 +849,9 @@ function PaginaTarotistas({ir,abrirModal,m}){
             <div key={t.id} className="tc" style={{background:"linear-gradient(160deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))",border:`1px solid ${t.color}33`,borderRadius:"26px",overflow:"hidden",position:"relative",animation:`fadeIn 0.6s ease ${idx*.12}s both`,cursor:"pointer"}} onClick={()=>setPerfil(t)}>
               <div style={{position:"absolute",top:0,left:0,right:0,height:"2px",background:`linear-gradient(90deg,transparent,${t.color}77,transparent)`}}/>
               <div style={{padding:m?"28px 20px 24px":"40px 28px 28px",textAlign:"center",background:`radial-gradient(ellipse at 50% 0%,${t.color}12,transparent 65%)`,position:"relative"}}>
-                <div style={{position:"absolute",top:"14px",right:"14px",display:"flex",alignItems:"center",gap:"5px",padding:"4px 10px",background:t.disponible?"rgba(52,211,153,0.1)":"rgba(255,255,255,0.05)",border:`1px solid ${t.disponible?"rgba(52,211,153,0.3)":"rgba(255,255,255,0.1)"}`,borderRadius:"100px"}}>
-                  <div style={{width:"6px",height:"6px",borderRadius:"50%",background:t.disponible?"#34d399":"rgba(255,255,255,0.3)",animation:t.disponible?"pulse 2s infinite":"none"}}/>
-                  <span style={{fontSize:"10px",color:t.disponible?"#34d399":"rgba(255,255,255,0.35)",fontFamily:"'Cinzel',serif"}}>{t.disponible?"En línea":"Ocupada"}</span>
+                <div style={{position:"absolute",top:"14px",right:"14px",display:"flex",alignItems:"center",gap:"5px",padding:"4px 10px",background:isOnline(t)?"rgba(52,211,153,0.1)":"rgba(255,255,255,0.05)",border:`1px solid ${isOnline(t)?"rgba(52,211,153,0.3)":"rgba(255,255,255,0.1)"}`,borderRadius:"100px"}}>
+                  <div style={{width:"6px",height:"6px",borderRadius:"50%",background:isOnline(t)?"#34d399":"rgba(255,255,255,0.3)",animation:isOnline(t)?"pulse 2s infinite":"none"}}/>
+                  <span style={{fontSize:"10px",color:isOnline(t)?"#34d399":"rgba(255,255,255,0.35)",fontFamily:"'Cinzel',serif"}}>{isOnline(t)?"En línea":"Ocupada"}</span>
                 </div>
                 <div style={{width:"100px",height:"100px",borderRadius:"50%",background:`radial-gradient(circle at 35% 35%,${t.color}44,${t.color}10)`,border:`2px solid ${t.color}55`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",fontSize:"44px",animation:`float ${6+idx}s ease-in-out infinite`}}>{t.icono}</div>
                 <div style={{fontSize:"10px",letterSpacing:"3px",color:`${t.color}99`,textTransform:"uppercase",marginBottom:"6px"}}>{t.simbolo}</div>
@@ -871,8 +873,8 @@ function PaginaTarotistas({ir,abrirModal,m}){
                 </div>
                 <div style={{display:"flex",gap:"9px"}}>
                   <button onClick={e=>{e.stopPropagation();setPerfil(t);}} style={{flex:1,padding:"11px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(192,132,252,0.2)",borderRadius:"11px",color:"rgba(255,255,255,0.7)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:"pointer"}}>VER PERFIL</button>
-                  <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t);}} className={t.disponible?"btn-glow":""} style={{flex:1,padding:"11px",background:t.disponible?`linear-gradient(135deg,${t.color}bb,${t.color}66)`:"rgba(255,255,255,0.03)",border:t.disponible?"none":"1px solid rgba(255,255,255,0.07)",borderRadius:"11px",color:t.disponible?"#fff":"rgba(255,255,255,0.25)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:t.disponible?"pointer":"not-allowed"}}>
-                    {t.disponible?"CONSULTAR":"OCUPADA"}
+                  <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??isOnline(t))&&abrirModal(t);}} className={isOnline(t)?"btn-glow":""} style={{flex:1,padding:"11px",background:isOnline(t)?`linear-gradient(135deg,${t.color}bb,${t.color}66)`:"rgba(255,255,255,0.03)",border:isOnline(t)?"none":"1px solid rgba(255,255,255,0.07)",borderRadius:"11px",color:isOnline(t)?"#fff":"rgba(255,255,255,0.25)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:isOnline(t)?"pointer":"not-allowed"}}>
+                    {isOnline(t)?"CONSULTAR":"OCUPADA"}
                   </button>
                 </div>
               </div>
