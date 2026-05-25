@@ -1,3 +1,18 @@
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, onValue, set, push, get } from "firebase/database";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAe0njZsusDe-1zXFlXhQKAY0IqDd-jsF0",
+  authDomain: "arcana-tarot-4bbc4.firebaseapp.com",
+  databaseURL: "https://arcana-tarot-4bbc4-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "arcana-tarot-4bbc4",
+  storageBucket: "arcana-tarot-4bbc4.firebasestorage.app",
+  messagingSenderId: "965789498122",
+  appId: "1:965789498122:web:29e3b74db5843e12d318f3"
+};
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
+
 import { useState, useEffect, useRef } from "react";
 
 const C = "#c084fc", G = "#34d399", B = "#60a5fa";
@@ -129,24 +144,44 @@ REGLAS IMPORTANTES:
 - Si la persona habla de pérdida, duelo o confusión existencial, ve directamente a ese lugar`,
 };
 
-async function llamarIA(tarotista, usuario, historial) {
-  const systemPrompt = PROMPTS[tarotista.id](usuario);
-  const messages = historial
-    .filter(m => m.de !== "sistema")
-    .map(m => ({ role: m.de === "u" ? "user" : "assistant", content: m.txt }));
+// ── RESPUESTAS SIMULADAS PARA LA DEMO ────────────────────────────────────────
+// Cada tarotista tiene su propio banco de respuestas con su voz y estilo.
+// Cuando se conecte la API real de Claude, estas respuestas se sustituyen automáticamente.
+const DEMO = {
+  1: [ // Selene — Amor & Relaciones
+    "Lo que me transmites resuena profundamente con La Emperatriz... Esta carta habla de vínculos que todavía tienen raíces vivas, aunque en este momento no lo parezca. La pregunta no es si hay amor, sino si ese amor está fluyendo en la dirección correcta para ti. ¿Qué es lo que más temes perder de esta relación?",
+    "Las cartas muestran un período de transición emocional importante. El Dos de Copas ha aparecido en tu tirada, y su mensaje es claro: hay una conexión real, pero algo la está bloqueando desde dentro. Antes de mirar hacia fuera, necesito que te preguntes — ¿estás siendo honesta contigo misma sobre lo que realmente necesitas?",
+    "Veo en tu energía la presencia de La Luna... Hay algo que no se está diciendo en esta relación, algo que permanece en las sombras. Las cartas no mienten — lo que sientes en el estómago cuando piensas en esta persona es información, no debilidad. ¿Cuánto tiempo llevas ignorando esa voz interior?",
+    "El Seis de Espadas aparece con claridad en tu lectura. No es una carta fácil, pero sí es honesta: indica un alejamiento necesario, no como derrota sino como cuidado propio. A veces el amor más profundo es el que nos damos a nosotras mismas al elegir la paz. ¿Qué necesitarías para sentirte en paz con esta decisión?",
+    "La Estrella ilumina tu tirada hoy, y eso es una señal poderosa de esperanza. Después de períodos de confusión emocional, esta carta anuncia renovación. El universo te pide que confíes, no en la otra persona todavía, sino en ti misma y en tu capacidad de atraer lo que mereces. ¿Qué aspecto del amor estás dispuesta a reclamar para ti?",
+  ],
+  2: [ // Morgana — Trabajo & Dinero
+    "Las cartas muestran algo muy concreto en tu situación laboral: El Mago está presente, y eso significa que tienes todos los recursos necesarios para avanzar — pero algo te está impidiendo activarlos. No es falta de capacidad. Suele ser miedo disfrazado de prudencia. ¿Qué excusa llevas más tiempo usando para no dar el siguiente paso?",
+    "El As de Pentáculos ha caído en tu tirada, y es una de las cartas más claras que existen en materia económica. Señala el inicio de un nuevo ciclo de abundancia — pero este ciclo no llega solo, llega a través de una decisión que probablemente ya sabes que tienes que tomar. ¿Cuál es la decisión que llevas semanas posponiendo?",
+    "Veo en tu lectura la presencia del Ocho de Pentáculos. Esta carta habla de dominio, de convertirse en experta en algo. El dinero sigue al valor real que aportas, y las cartas me dicen que estás infravalorando lo que sabes hacer. ¿Cuánto tiempo llevas cobrando por debajo de lo que mereces?",
+    "La Rueda de la Fortuna aparece en tu tirada, y su mensaje es directo: los ciclos cambian. Si llevas tiempo en un período de estancamiento laboral, ese ciclo está llegando a su fin. Pero los cambios no ocurren solos — requieren que tú te muevas también. ¿Qué oportunidad tienes ahora mismo que no estás aprovechando?",
+    "El Siete de Copas me habla de una persona que tiene demasiadas opciones sobre la mesa y no avanza en ninguna. Eso genera la sensación de estar ocupada sin progresar. Las cartas te piden claridad radical: elige una dirección, la que sea, y comprométete con ella. ¿Cuál es el proyecto o idea que más te ilusiona pero al que menos tiempo dedicas?",
+  ],
+  3: [ // Isadora — Espiritualidad
+    "Lo que sientes no es confusión, es expansión. La Sacerdotisa ha aparecido en tu tirada, y ella siempre llega cuando el alma está en un umbral — entre lo que fuiste y lo que estás becoming. Este período que describes como pérdida de rumbo es en realidad un período de escucha profunda. ¿Cuándo fue la última vez que te sentaste en silencio a preguntarte qué necesitas realmente?",
+    "Las cartas muestran la presencia poderosa de El Juicio. Esta es la carta de los grandes despertares, de las llamadas del alma que no podemos seguir ignorando. No es casualidad que estés aquí hoy. Hay algo que sientes que debes cambiar, algo que llevas tiempo sabiendo pero que da miedo nombrar. ¿Qué es lo que sabes y que aún no has dicho en voz alta?",
+    "El mundo espiritual habla a través de sincronías, y la tuya es clara: El Colgado ha aparecido. No es una carta de sufrimiento — es una carta de pausa sagrada. A veces el universo nos pide que soltemos el control para ver desde un ángulo diferente. ¿Qué estarías dispuesta a soltar si supieras que del otro lado hay algo mejor?",
+    "Hay una energía kármica muy presente en tu lectura, y viene con La Luna. Esta carta nos habla de lo que heredamos — patrones familiares, creencias que no son nuestras, miedos que llevan más de una generación en nuestra sangre. El camino espiritual que describes empieza exactamente ahí, en reconocer qué es tuyo y qué no lo es. ¿De quién crees que heredaste la forma en que te relacionas con el miedo?",
+    "El As de Copas ha aparecido en tu tirada, y es un regalo del universo. Esta carta marca el inicio de un nuevo ciclo emocional y espiritual — una apertura del corazón que viene después de un período de cierre necesario. El alma sabe cuándo está lista. Y la tuya lo está. ¿Qué forma de amor o conexión llevas tiempo deseando pero no te has permitido buscar?",
+  ],
+};
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: systemPrompt,
-      messages,
-    }),
-  });
-  const data = await res.json();
-  return data.content?.[0]?.text || "Las cartas guardan silencio por un momento... Inténtalo de nuevo.";
+// Contador para rotar respuestas
+const _demoIdx = {1:0, 2:0, 3:0};
+
+async function llamarIA(tarotista, usuario, historial){
+  // Simular delay natural de escritura (1.5 a 3 segundos)
+  await new Promise(r=>setTimeout(r, 1500 + Math.random()*1500));
+  const banco = DEMO[tarotista.id];
+  const idx = _demoIdx[tarotista.id] % banco.length;
+  _demoIdx[tarotista.id]++;
+  // Personalizar con el nombre del usuario
+  return banco[idx].replace(/\{nombre\}/g, usuario.nombre.split(" ")[0]);
 }
 
 const CSS=`
@@ -163,6 +198,20 @@ const CSS=`
 .tc{transition:transform 0.3s ease}.btn-glow{transition:all 0.3s}
 input,select,button{-webkit-appearance:none}
 `;
+
+
+// ── HOOK: estado online de tarotistas desde Firebase ─────────────────────────
+function useEstadoTarotistas(){
+  const[estados,setEstados]=useState({1:true,2:true,3:false}); // defaults
+  useEffect(()=>{
+    const r=ref(db,"estados");
+    const unsub=onValue(r,snap=>{
+      if(snap.exists()) setEstados(snap.val());
+    });
+    return()=>unsub();
+  },[]);
+  return estados;
+}
 
 function useMobile(){const[m,setM]=useState(window.innerWidth<768);useEffect(()=>{const f=()=>setM(window.innerWidth<768);window.addEventListener("resize",f);return()=>window.removeEventListener("resize",f)},[]);return m;}
 function useScroll(){const[s,setS]=useState(0);useEffect(()=>{const f=()=>setS(window.scrollY);window.addEventListener("scroll",f);return()=>window.removeEventListener("scroll",f)},[]);return s;}
@@ -473,6 +522,19 @@ function BannerCaducidad({creditos, onRecargar, compact=false}){
 function Chat({usuario,t,onBack}){
   const m=useMobile();
   const hora=()=>new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
+  const[sesionId,setSesionId]=useState(null);
+
+  // Crear sesión en Firebase al iniciar chat
+  useEffect(()=>{
+    const nuevaSesion={
+      tarotistaid:t.id,
+      cliente:{nombre:usuario.nombre,email:usuario.email,pais:usuario.pais},
+      inicio:Date.now(),
+      creditos:20,
+    };
+    const r=push(ref(db,"conversaciones"),nuevaSesion);
+    setSesionId(r.key);
+  },[]);
   const bienvenidas={
     1:`Bienvenida, ${usuario.nombre.split(" ")[0]}... Siento tu energía al otro lado. Las cartas ya se han movido. ¿Qué lleva tu corazón hoy?`,
     2:`${usuario.nombre.split(" ")[0]}, qué bien que hayas llegado. Las cartas tienen algo que decirte. ¿Qué situación quieres iluminar hoy?`,
@@ -574,6 +636,7 @@ function Chat({usuario,t,onBack}){
 // ── PÁGINAS ───────────────────────────────────────────────────────────────────
 
 function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
+  const estadosTarotistas=useEstadoTarotistas();
   const px=m?"16px":"40px";
   return(
     <div style={{position:"relative",zIndex:1,minHeight:"100vh",background:"linear-gradient(180deg,#05030f 0%,#0a0618 50%,#050310 100%)",fontFamily:"'Cormorant Garamond',serif"}}>
@@ -642,7 +705,7 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
                     <h3 style={{fontFamily:"'Cinzel',serif",fontSize:"20px",color:"#fff",marginBottom:"2px"}}>{t.nombre}</h3>
                     <p style={{fontSize:"12px",color:`${t.color}cc`,marginBottom:"10px"}}>{t.esp}</p>
                     <p style={{color:"rgba(255,255,255,0.45)",fontSize:"13px",lineHeight:1.6,marginBottom:"12px",fontStyle:"italic"}}>"{t.bio.slice(0,100)}…"</p>
-                    <button onClick={e=>{e.stopPropagation();t.disponible&&abrirModal(t);}} style={{width:"100%",padding:"11px",background:t.disponible?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${t.disponible?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"10px",color:t.disponible?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:t.disponible?"pointer":"not-allowed"}}>
+                    <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t);}} style={{width:"100%",padding:"11px",background:t.disponible?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${t.disponible?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"10px",color:t.disponible?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:t.disponible?"pointer":"not-allowed"}}>
                       {t.disponible?"INICIAR CONSULTA":"NO DISPONIBLE"}
                     </button>
                   </div>
@@ -667,7 +730,7 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
                     </div>
                     <span style={{fontSize:"12px",color:"rgba(255,255,255,0.3)"}}>{t.reviews.toLocaleString()} consultas</span>
                   </div>
-                  <button onClick={e=>{e.stopPropagation();t.disponible&&abrirModal(t);}} className={t.disponible?"btn-glow":""} style={{width:"100%",padding:"13px",background:t.disponible?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${t.disponible?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"12px",color:t.disponible?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"12px",letterSpacing:"2px",cursor:t.disponible?"pointer":"not-allowed"}}>
+                  <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t);}} className={t.disponible?"btn-glow":""} style={{width:"100%",padding:"13px",background:t.disponible?`linear-gradient(135deg,${t.color}99,${t.color}55)`:"rgba(255,255,255,0.04)",border:`1px solid ${t.disponible?t.color+"66":"rgba(255,255,255,0.08)"}`,borderRadius:"12px",color:t.disponible?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"12px",letterSpacing:"2px",cursor:t.disponible?"pointer":"not-allowed"}}>
                     {t.disponible?"INICIAR CONSULTA":"NO DISPONIBLE"}
                   </button>
                 </div>
@@ -694,6 +757,7 @@ function PaginaInicio({ir,abrirModal,m,creditos,onMostrarRecarga}){
 }
 
 function PaginaTarotistas({ir,abrirModal,m}){
+  const estadosTarotistas=useEstadoTarotistas();
   const px=m?"16px":"40px";
   const[perfil,setPerfil]=useState(null);
   if(perfil){const t=perfil;return(
@@ -731,7 +795,7 @@ function PaginaTarotistas({ir,abrirModal,m}){
                 </div>
               ))}
             </div>
-            <button onClick={()=>t.disponible&&abrirModal(t)} className={t.disponible?"btn-glow":""} style={{width:"100%",padding:"15px",background:t.disponible?`linear-gradient(135deg,${t.color}cc,${t.color}77)`:"rgba(255,255,255,0.04)",border:t.disponible?"none":"1px solid rgba(255,255,255,0.08)",borderRadius:"14px",color:t.disponible?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"13px",letterSpacing:"2px",cursor:t.disponible?"pointer":"not-allowed"}}>
+            <button onClick={()=>(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t)} className={t.disponible?"btn-glow":""} style={{width:"100%",padding:"15px",background:t.disponible?`linear-gradient(135deg,${t.color}cc,${t.color}77)`:"rgba(255,255,255,0.04)",border:t.disponible?"none":"1px solid rgba(255,255,255,0.08)",borderRadius:"14px",color:t.disponible?"#fff":"rgba(255,255,255,0.3)",fontFamily:"'Cinzel',serif",fontSize:"13px",letterSpacing:"2px",cursor:t.disponible?"pointer":"not-allowed"}}>
               {t.disponible?"INICIAR CONSULTA":"NO DISPONIBLE AHORA"}
             </button>
           </div>
@@ -807,7 +871,7 @@ function PaginaTarotistas({ir,abrirModal,m}){
                 </div>
                 <div style={{display:"flex",gap:"9px"}}>
                   <button onClick={e=>{e.stopPropagation();setPerfil(t);}} style={{flex:1,padding:"11px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(192,132,252,0.2)",borderRadius:"11px",color:"rgba(255,255,255,0.7)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:"pointer"}}>VER PERFIL</button>
-                  <button onClick={e=>{e.stopPropagation();t.disponible&&abrirModal(t);}} className={t.disponible?"btn-glow":""} style={{flex:1,padding:"11px",background:t.disponible?`linear-gradient(135deg,${t.color}bb,${t.color}66)`:"rgba(255,255,255,0.03)",border:t.disponible?"none":"1px solid rgba(255,255,255,0.07)",borderRadius:"11px",color:t.disponible?"#fff":"rgba(255,255,255,0.25)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:t.disponible?"pointer":"not-allowed"}}>
+                  <button onClick={e=>{e.stopPropagation();(estadosTarotistas[t.id]??t.disponible)&&abrirModal(t);}} className={t.disponible?"btn-glow":""} style={{flex:1,padding:"11px",background:t.disponible?`linear-gradient(135deg,${t.color}bb,${t.color}66)`:"rgba(255,255,255,0.03)",border:t.disponible?"none":"1px solid rgba(255,255,255,0.07)",borderRadius:"11px",color:t.disponible?"#fff":"rgba(255,255,255,0.25)",fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"1.5px",cursor:t.disponible?"pointer":"not-allowed"}}>
                     {t.disponible?"CONSULTAR":"OCUPADA"}
                   </button>
                 </div>
